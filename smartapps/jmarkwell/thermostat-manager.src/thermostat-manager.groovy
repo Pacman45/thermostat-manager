@@ -271,7 +271,7 @@ def updated() {
 }
 
 def initialize() {
-    def itsVeryColdOutside = false
+    state.itsVeryColdOutside = false
     if (returnToNormalHeatThreshold < 3) {
         returnToNormalHeatThreshold = 3
     } /*  Outdoor temperature must rise at least 3 degrees above the emergencyHeatThreshold to return to Normal Heat  */
@@ -341,7 +341,7 @@ def tempHandler(event) {
             heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
         ) {
         
-        if (!useEmergencyHeat && (!itsVeryColdOutside || disableExtEmergencyHeat)) {
+        if (!useEmergencyHeat && (!state.itsVeryColdOutside || disableExtEmergencyHeat)) {
             logNNotify("Thermostat Manager - The temperature has fallen to ${currentTemp}. Setting heat mode.")
             thermostat.heat()
         } else {
@@ -409,7 +409,7 @@ def outdoorTempHandler(event) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has fallen to ${currentOutdoorTemp}. Setting emergency heat mode.")
         thermostat.emergencyHeat()
-        itsVeryColdOutside = true   //MNewman added code
+        state.itsVeryColdOutside = true   //MNewman added code
         
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {
@@ -428,12 +428,12 @@ def outdoorTempHandler(event) {
             !disable && !disableExtEmergencyHeat && !useEmergencyHeat && (thermostatMode == "emergency heat") &&                             //Next line contains MNewman altered code
             emergencyHeatThreshold && (Math.round(currentOutdoorTemp) > Math.round(emergencyHeatThreshold + returnToNormalHeatThreshold)) && //Current outdoor temp must be greater than
                                                                                                                                              //emergency heat threshold + return to normal heat threshold
-            heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
+            heatingThreshold && ( Math.round(currentTemp) <= Math.round(coolingThreshold) )  // Coming out of emergency heat, as long as current temp is less than coolingThreshold, set normal heat
         ) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has risen to ${currentOutdoorTemp}. Setting heat mode.")
         thermostat.heat()
-        itsVeryColdOutside = false  //MNewman added code
+        state.itsVeryColdOutside = false  //MNewman added code
         
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {

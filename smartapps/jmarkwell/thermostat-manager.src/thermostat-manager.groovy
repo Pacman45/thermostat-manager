@@ -506,7 +506,7 @@ def contactClosedHandler(event) {
 
 def esConflictResolver() { // Remember that state values are not changed until the application has finished running.
     // If all monitored contacts are currently closed.
-    if ( !disable && !disableEnergySaver && !contact.currentValue("contact").contains("open") ) {
+    if ( !disable && !disableEnergySaver && !contact?.currentValue("contact")?.contains("open") ) {
         // If an open contact has been reported, discontinue any existing countdown.
         if (state.openContactReported) {
             log.debug "Thermostat_Manager.esConflictResolver(): All contacts have been closed. Discontinuing any existing thermostat pause countdown."

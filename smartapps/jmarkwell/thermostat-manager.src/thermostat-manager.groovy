@@ -189,7 +189,7 @@ def mainPage() {
 def setPointPage() {
     dynamicPage(name: "setPointPage", title: "Smart Home Monitor Based SetPoint Enforcement") {
         section() {
-            paragraph "These optional settings allow you use Thermostat Manager to set your thermostat's cooling and heating setPoints based on the status of Smart Home Monitor; SmartThings' built-in security system. SetPoints will be set only when a thermostat mode change occurs (e.g. heating to cooling) and only the setPoint for the incoming mode will be set (e.g. A change from heating mode to cooling mode would prompt the cooling setPoint to be set)."
+            paragraph "These optional settings allow you to use Thermostat Manager to set your thermostat's cooling and heating setPoints based on the status of Smart Home Monitor; SmartThings' built-in security system. SetPoints will be set only when a thermostat mode change occurs (e.g. heating to cooling) and only the setPoint for the incoming mode will be set (e.g. A change from heating mode to cooling mode would prompt the cooling setPoint to be set)."
         }
         section("Disarmed Status") {
             input name: "offCoolingSetPoint", title: "Cooling SetPoint", type: "number", required: false
@@ -243,6 +243,12 @@ def emergencyHeatPage() {
             input name: "outdoorTempSensor", title: "Outdoor Temperature Sensor", type: "capability.temperatureMeasurement", multiple: false, required: false
             paragraph "When an outdoor temperature sensor reports a temperature lower than the emergency heat threshold, Thermostat Manager will set emergency heat mode. Set the emergency heat threshold at some value lower than the heating threshold."
             input name: "emergencyHeatThreshold", title: "Emergency Heat Threshold", type: "number", required: false
+            /*
+             * The following is coded added by MNewman:   */
+             paragraph "In order to avoid excessive cycling between emergency heat and normal heat, Thermostat Manager will delay return to Normal Heat mode until temperature rises at least three degrees above the emergency heat threshold.  To further reduce cycling, set a higher return differential (>3)."
+             input name: "returnToNormalHeatThreshold", title: "Return to Normal Heat Threshold", type: "number", required: false
+             /* End of added code this section
+              *                                 */
             input name: "disableExtEmergencyHeat", title: "Disable Externally Controlled Emergency Heat", type: "bool", defaultValue: false, required: true
         }
         section() {
@@ -265,6 +271,10 @@ def updated() {
 }
 
 def initialize() {
+    def itsVeryColdOutside = false
+    if (returnToNormalHeatThreshold < 3) {
+        returnToNormalHeatThreshold = 3
+    } /*  Outdoor temperature must rise at least 3 degrees above the emergencyHeatThreshold to return to Normal Heat  */
     subscribe(thermostat, "temperature", tempHandler)
     subscribe(contact, "contact.open", contactOpenHandler)
     subscribe(contact, "contact.closed", contactClosedHandler)
@@ -331,7 +341,7 @@ def tempHandler(event) {
             heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
         ) {
         
-        if (!useEmergencyHeat) {
+        if (!useEmergencyHeat && (!itsVeryColdOutside || disableExtEmergencyHeat)) {
             logNNotify("Thermostat Manager - The temperature has fallen to ${currentTemp}. Setting heat mode.")
             thermostat.heat()
         } else {
@@ -399,6 +409,7 @@ def outdoorTempHandler(event) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has fallen to ${currentOutdoorTemp}. Setting emergency heat mode.")
         thermostat.emergencyHeat()
+        itsVeryColdOutside = true   //MNewman added code
         
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {
@@ -414,13 +425,15 @@ def outdoorTempHandler(event) {
         }
     }
     else if ( // Temperature setPoints only stick for the active mode.
-            !disable && !disableExtEmergencyHeat && !useEmergencyHeat && (thermostatMode == "emergency heat") &&
-            emergencyHeatThreshold && ( Math.round(currentOutdoorTemp) > Math.round(emergencyHeatThreshold) ) &&
+            !disable && !disableExtEmergencyHeat && !useEmergencyHeat && (thermostatMode == "emergency heat") &&                             //Next line contains MNewman altered code
+            emergencyHeatThreshold && (Math.round(currentOutdoorTemp) > Math.round(emergencyHeatThreshold + returnToNormalHeatThreshold)) && //Current outdoor temp must be greater than
+                                                                                                                                             //emergency heat threshold + return to normal heat threshold
             heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
         ) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has risen to ${currentOutdoorTemp}. Setting heat mode.")
         thermostat.heat()
+        itsVeryColdOutside = false  //MNewman added code
         
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {

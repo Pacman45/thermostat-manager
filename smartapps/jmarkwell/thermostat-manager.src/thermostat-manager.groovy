@@ -246,8 +246,7 @@ def emergencyHeatPage() {
             /*
              * The following is coded added by MNewman:   */
              paragraph "In order to avoid excessive cycling between emergency heat and normal heat, Thermostat Manager will delay return to Normal Heat mode until temperature rises at least three degrees above the emergency heat threshold.  To further reduce cycling, set a higher return differential (>3)."
-             input name: "returnToNormalHeatThreshold", title: "Return to Normal Heat Threshold", type: "number", defaultValue: 3, required: false
-             if (returnToNormalHeatThreshold < 3) returnToNormalHeatThreshold = 3 
+             input name: "returnToNormalHeatThreshold", title: "Return to Normal Heat Threshold", type: "number", defaultValue: 3, required: false 
              /* End of added code this section
               *                                 */
             input name: "disableExtEmergencyHeat", title: "Disable Externally Controlled Emergency Heat", type: "bool", defaultValue: false, required: true
@@ -273,6 +272,7 @@ def updated() {
 
 def initialize() {
     state.itsVeryColdOutside = false
+    if (returnToNormalHeatThreshold < 3) returnToNormalHeatThreshold = 3
     subscribe(thermostat, "temperature", tempHandler)
     subscribe(contact, "contact.open", contactOpenHandler)
     subscribe(contact, "contact.closed", contactClosedHandler)

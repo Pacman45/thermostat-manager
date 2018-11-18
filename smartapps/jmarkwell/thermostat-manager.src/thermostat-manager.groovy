@@ -254,6 +254,10 @@ def emergencyHeatPage() {
         section() {
             input name: "useEmergencyHeat", title: "Always Use Emergency Heat Mode Instead of Heat Mode", type: "bool", defaultValue: false, required: true
         }
+        section() {
+            paragraph 'If you want to lock thermostat on comfort setting due to extreme bitter cold outdoor temperatures, indicate the temperature you would like this to occur. "Home-Bitter Cold" mode must exist. This value must be less than or equal to the Emergency Heat Threshold.'
+            input name: "bitterColdThreshold", title: "Comfort Lock Occurs at or below this Bitter Cold Threshold", type: "number", required: false
+        }
     }
 }
 
@@ -263,8 +267,7 @@ def installed() {
 }
 
 def updated() {
-    state.clear()
-    
+    state.clear()   
     log.debug "Thermostat_Manager.updated(): ${settings}"
     unsubscribe()
     initialize()
@@ -273,6 +276,7 @@ def updated() {
 def initialize() {
     state.itsVeryColdOutside = false
     if (returnToNormalHeatThreshold < 3) returnToNormalHeatThreshold = 3
+    if (bitterColdThreshold > emergencyHeatThreshold) bitterColdThreshold = emergencyHeatThreshold
     subscribe(thermostat, "temperature", tempHandler)
     subscribe(contact, "contact.open", contactOpenHandler)
     subscribe(contact, "contact.closed", contactClosedHandler)
@@ -408,7 +412,15 @@ def outdoorTempHandler(event) {
         logNNotify("Thermostat Manager - Outdoor temperature has fallen to ${currentOutdoorTemp}. Setting emergency heat mode.")
         thermostat.emergencyHeat()
         state.itsVeryColdOutside = true   //MNewman added code
-        
+        if ( Math.round(currentOutdoorTemp) < Math.round(bitterColdThreshold) && homeMode == "Home" ) {  //Newman added code for setting "Home-Bitter Cold"
+            logNotify('Thermostat Manager setting mode to "Home-Bitter Cold"')  //Newman added code
+            location.setMode("Home-Bitter Cold")  //Newman added code
+            homeMode = location.mode //Newman added code
+        } else if ( Math.round(currentOutdoorTemp) >= Math.round(bitterColdThreshold) && homeMode == "Home-Bitter Cold") { //Newman added code
+            logNotify('Thermostat Manager setting mode back to "Home"')  //Newman added code
+            location.setMode("Home")  //Newman added code
+            homeMode = location.mode  //Newman added code
+        }
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {
                 // SetPoints won't be changed unless the thermostat is already in the required mode.

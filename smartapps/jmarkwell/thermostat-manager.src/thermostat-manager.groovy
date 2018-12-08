@@ -363,8 +363,7 @@ def tempHandler(event) {
         ) {
         
         if (!useEmergencyHeat && (!state.itsVeryColdOutside || disableExtEmergencyHeat)) {
-        def newMode = "heat"
-        if (!useEmergencyHeat) {
+            def newMode = "heat"
             logNNotify("Thermostat Manager - The temperature has fallen to ${currentTemp}. Setting heat mode.")
             thermostat.heat()
         } else {

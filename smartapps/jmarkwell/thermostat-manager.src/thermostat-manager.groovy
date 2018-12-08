@@ -656,6 +656,7 @@ def esConflictResolver() { // Remember that state values are not changed until t
             runIn(reRunTime, esConflictResolver)
         }
     }
+}
 
 def openContactPause() {
     def thermostatMode = thermostat.currentValue("thermostatMode")

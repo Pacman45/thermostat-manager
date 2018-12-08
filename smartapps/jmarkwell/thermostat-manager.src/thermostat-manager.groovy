@@ -416,7 +416,7 @@ def outdoorTempHandler(event) {
         thermostat.fanAuto()
     }
 
-    if bitterColdThreshold {
+    if (bitterColdThreshold) {
         if ( Math.round(currentOutdoorTemp) < Math.round(bitterColdThreshold) && homeMode == "Home" ) {  //Newman added code for setting "Home-Bitter Cold"
             logNotify('Thermostat Manager setting mode to "Home-Bitter Cold"')  //Newman added code
             location.setMode("Home-Bitter Cold")  //Newman added code

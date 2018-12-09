@@ -414,15 +414,16 @@ def outdoorTempHandler(event) {
         logNNotify("Thermostat Manager setting fan mode auto.")
         thermostat.fanAuto()
     }
-
-    if ( Math.round(currentOutdoorTemp) < Math.round(bitterColdThreshold) && homeMode == "Home" ) {  //Newman added code for setting "Home-Bitter Cold"
+    if (bitterColdThreshold) {
+        if ( Math.round(currentOutdoorTemp) < Math.round(bitterColdThreshold) && homeMode == "Home" ) {  //Newman added code for setting "Home-Bitter Cold"
             logNotify('Thermostat Manager setting mode to "Home-Bitter Cold"')  //Newman added code
             location.setMode("Home-Bitter Cold")  //Newman added code
             homeMode = "Home-Bitter Cold" //Newman added code
-    } else if ( Math.round(currentOutdoorTemp) >= Math.round(bitterColdThreshold) && homeMode == "Home-Bitter Cold") { //Newman added code
+        } else if ( Math.round(currentOutdoorTemp) >= Math.round(bitterColdThreshold) && homeMode == "Home-Bitter Cold") { //Newman added code
             logNotify('Thermostat Manager setting mode back to "Home"')  //Newman added code
             location.setMode("Home")  //Newman added code
             homeMode = "Home"  //Newman added code
+        }
     }
     
     if ( // Temperature setPoints only stick for the active mode.

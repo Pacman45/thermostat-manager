@@ -362,8 +362,13 @@ def tempHandler(event) {
             heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
         ) {
         
+<<<<<<< HEAD
         if (!useEmergencyHeat && (!state.itsVeryColdOutside || disableExtEmergencyHeat)) {
             def newMode = "heat"
+=======
+        def newMode = "heat"
+        if (!useEmergencyHeat) {
+>>>>>>> upstream/master
             logNNotify("Thermostat Manager - The temperature has fallen to ${currentTemp}. Setting heat mode.")
             thermostat.heat()
         } else {
@@ -433,6 +438,7 @@ def outdoorTempHandler(event) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has fallen to ${currentOutdoorTemp}. Setting emergency heat mode.")
         thermostat.emergencyHeat()
+<<<<<<< HEAD
         state.itsVeryColdOutside = true   //MNewman added code
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {
@@ -446,6 +452,8 @@ def outdoorTempHandler(event) {
                 runIn( 60, enforceHeatingSetPoint, [data: [setPoint: awayHeatingSetPoint] ] )
             }
         }
+=======
+>>>>>>> upstream/master
         
         // SetPoints won't be changed unless the thermostat is already in the required mode.
         def setSetPoint = getSHMSetPoint("emergency heat")

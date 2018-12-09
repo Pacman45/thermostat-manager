@@ -362,13 +362,8 @@ def tempHandler(event) {
             heatingThreshold && ( Math.round(currentTemp) < Math.round(heatingThreshold) )
         ) {
         
-<<<<<<< HEAD
         if (!useEmergencyHeat && (!state.itsVeryColdOutside || disableExtEmergencyHeat)) {
             def newMode = "heat"
-=======
-        def newMode = "heat"
-        if (!useEmergencyHeat) {
->>>>>>> upstream/master
             logNNotify("Thermostat Manager - The temperature has fallen to ${currentTemp}. Setting heat mode.")
             thermostat.heat()
         } else {
@@ -423,11 +418,11 @@ def outdoorTempHandler(event) {
     if ( Math.round(currentOutdoorTemp) < Math.round(bitterColdThreshold) && homeMode == "Home" ) {  //Newman added code for setting "Home-Bitter Cold"
             logNotify('Thermostat Manager setting mode to "Home-Bitter Cold"')  //Newman added code
             location.setMode("Home-Bitter Cold")  //Newman added code
-            homeMode = location.mode //Newman added code
+            homeMode = "Home-Bitter Cold" //Newman added code
     } else if ( Math.round(currentOutdoorTemp) >= Math.round(bitterColdThreshold) && homeMode == "Home-Bitter Cold") { //Newman added code
             logNotify('Thermostat Manager setting mode back to "Home"')  //Newman added code
             location.setMode("Home")  //Newman added code
-            homeMode = location.mode  //Newman added code
+            homeMode = "Home"  //Newman added code
     }
     
     if ( // Temperature setPoints only stick for the active mode.
@@ -438,7 +433,6 @@ def outdoorTempHandler(event) {
         
         logNNotify("Thermostat Manager - Outdoor temperature has fallen to ${currentOutdoorTemp}. Setting emergency heat mode.")
         thermostat.emergencyHeat()
-<<<<<<< HEAD
         state.itsVeryColdOutside = true   //MNewman added code
         if (!disableSHMSetPointEnforce) {
             if ( (securityStatus == "off") && (offHeatingSetPoint) ) {
@@ -452,8 +446,6 @@ def outdoorTempHandler(event) {
                 runIn( 60, enforceHeatingSetPoint, [data: [setPoint: awayHeatingSetPoint] ] )
             }
         }
-=======
->>>>>>> upstream/master
         
         // SetPoints won't be changed unless the thermostat is already in the required mode.
         def setSetPoint = getSHMSetPoint("emergency heat")
